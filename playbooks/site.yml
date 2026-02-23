@@ -1,0 +1,8 @@
+---
+- import_playbook: 01_provision_gcp.yml
+- import_playbook: 02_bootstrap_os.yml
+- import_playbook: 03_install_rke2.yml
+- import_playbook: 04_install_ingress.yml
+- import_playbook: 05_install_cert_manager.yml
+- import_playbook: 06_install_rancher.yml
+- import_playbook: 07_postchecks.yml

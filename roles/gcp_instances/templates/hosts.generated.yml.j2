@@ -1,0 +1,27 @@
+---
+all:
+  children:
+    gcp_instances:
+      hosts:
+{% for node in cp_info.results %}
+        {{ node.resources[0].name }}:
+          ansible_host: {{ node.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}
+          private_ip: {{ node.resources[0].networkInterfaces[0].networkIP }}
+          ansible_user: {{ gcp_ssh_user }}
+{% endfor %}
+{% for node in worker_info.results %}
+        {{ node.resources[0].name }}:
+          ansible_host: {{ node.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}
+          private_ip: {{ node.resources[0].networkInterfaces[0].networkIP }}
+          ansible_user: {{ gcp_ssh_user }}
+{% endfor %}
+    control_plane:
+      hosts:
+{% for node in cp_info.results %}
+        {{ node.resources[0].name }}: {}
+{% endfor %}
+    worker:
+      hosts:
+{% for node in worker_info.results %}
+        {{ node.resources[0].name }}: {}
+{% endfor %}

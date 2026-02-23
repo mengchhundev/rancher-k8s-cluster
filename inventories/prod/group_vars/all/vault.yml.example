@@ -1,0 +1,9 @@
+---
+# Encrypt this file as inventories/prod/group_vars/all/vault.yml with ansible-vault.
+vault_rke2_token: "CHANGE_ME_SUPER_RANDOM_MIN_32_CHARS"
+vault_rancher_bootstrap_password: "CHANGE_ME_LONG_RANDOM_PASSWORD"
+vault_gcp_service_account_json: |
+  {
+    "type": "service_account",
+    "project_id": "my-gcp-project"
+  }

@@ -1,0 +1,14 @@
+---
+- name: Install RKE2 servers
+  hosts: control_plane
+  become: true
+  gather_facts: true
+  roles:
+    - role: rke2_server
+
+- name: Install RKE2 agents
+  hosts: worker
+  become: true
+  gather_facts: true
+  roles:
+    - role: rke2_agent

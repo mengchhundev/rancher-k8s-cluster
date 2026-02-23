@@ -1,0 +1,15 @@
+write-kubeconfig-mode: "0640"
+token: "{{ rke2_token }}"
+node-name: "{{ inventory_hostname }}"
+tls-san:
+  - "{{ rancher_fqdn }}"
+{% if inventory_hostname != (groups['control_plane'] | first) %}
+server: "https://{{ hostvars[groups['control_plane'][0]].private_ip }}:9345"
+{% endif %}
+{% if rke2_server_taints is defined and rke2_server_taints | length > 0 %}
+node-taint:
+{% for taint in rke2_server_taints %}
+  - "{{ taint }}"
+{% endfor %}
+{% endif %}
+cni: "{{ rke2_cni }}"

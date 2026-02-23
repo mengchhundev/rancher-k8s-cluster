@@ -1,0 +1,9 @@
+hostname: {{ rancher_fqdn }}
+replicas: 3
+bootstrapPassword: "{{ vault_rancher_bootstrap_password }}"
+ingress:
+  extraAnnotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    source: secret
+privateCA: false
