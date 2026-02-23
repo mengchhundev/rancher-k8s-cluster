@@ -1,0 +1,11 @@
+---
+- name: Provision GCP network and VM instances
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - "../inventories/prod/group_vars/all.yml"
+    - "../inventories/prod/group_vars/all/vault.yml"
+  roles:
+    - role: gcp_network
+    - role: gcp_instances

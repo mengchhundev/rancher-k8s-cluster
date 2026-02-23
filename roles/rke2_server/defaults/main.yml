@@ -1,0 +1,3 @@
+---
+rke2_channel: stable
+rke2_cni: canal

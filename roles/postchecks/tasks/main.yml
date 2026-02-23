@@ -1,0 +1,23 @@
+---
+- name: Check nodes are Ready
+  ansible.builtin.command: kubectl get nodes -o wide
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: nodes_out
+  changed_when: false
+
+- name: Show node status
+  ansible.builtin.debug:
+    var: nodes_out.stdout_lines
+
+- name: Check ingress nginx service
+  ansible.builtin.command: kubectl -n ingress-nginx get svc ingress-nginx-controller
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  changed_when: false
+
+- name: Check Rancher deployment
+  ansible.builtin.command: kubectl -n cattle-system rollout status deploy/rancher --timeout=300s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  changed_when: false

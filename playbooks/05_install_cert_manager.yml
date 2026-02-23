@@ -1,0 +1,7 @@
+---
+- name: Install cert-manager and ACME issuer
+  hosts: control_plane[0]
+  become: true
+  gather_facts: true
+  roles:
+    - role: cert_manager

@@ -1,0 +1,7 @@
+---
+- name: Bootstrap OS prerequisites
+  hosts: gcp_instances
+  become: true
+  gather_facts: true
+  roles:
+    - role: common

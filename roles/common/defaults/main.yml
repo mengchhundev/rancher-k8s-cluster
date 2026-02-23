@@ -1,0 +1,12 @@
+---
+common_packages:
+  - curl
+  - jq
+  - vim
+  - gnupg
+  - software-properties-common
+  - apt-transport-https
+  - ca-certificates
+  - nfs-common
+  - unzip
+disable_swap: true
