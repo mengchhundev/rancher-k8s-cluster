@@ -9,5 +9,11 @@ Production-style Infrastructure-as-Code scaffold to provision 5 Ubuntu 22.04 VMs
    - `ansible-galaxy collection install -r requirements.yml`
 4. Run provisioning then cluster setup playbooks.
 
+## Task runner
+A `justfile` is included to simplify common workflows:
+- `just provision`
+- `just deploy`
+- `just all`
+
 See full implementation plan, architecture, runbook, validation, and troubleshooting in:
 - `docs/PROJECT_PLAN.md`
