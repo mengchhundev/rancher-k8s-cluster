@@ -1,0 +1,3 @@
+server: "https://{{ hostvars[groups['control_plane'][0]].private_ip }}:9345"
+token: "{{ rke2_token }}"
+node-name: "{{ inventory_hostname }}"

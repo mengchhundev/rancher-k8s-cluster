@@ -1,0 +1,3 @@
+---
+gcp_network_routing_mode: REGIONAL
+gcp_rancher_static_ip_tier: PREMIUM

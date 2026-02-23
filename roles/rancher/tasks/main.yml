@@ -1,0 +1,51 @@
+---
+- name: Add Rancher Helm repo
+  kubernetes.core.helm_repository:
+    name: rancher-stable
+    repo_url: https://releases.rancher.com/server-charts/stable
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Create cattle-system namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: cattle-system
+    state: present
+
+- name: Create TLS certificate for Rancher ingress
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: rancher-tls
+        namespace: cattle-system
+      spec:
+        secretName: tls-rancher-ingress
+        issuerRef:
+          kind: ClusterIssuer
+          name: letsencrypt-prod
+        dnsNames:
+          - "{{ rancher_fqdn }}"
+
+- name: Render Rancher values file
+  ansible.builtin.template:
+    src: rancher-values.yaml.j2
+    dest: /tmp/rancher-values.yaml
+    mode: "0644"
+
+- name: Install Rancher
+  kubernetes.core.helm:
+    name: rancher
+    chart_ref: rancher-stable/rancher
+    chart_version: "{{ rancher_chart_version }}"
+    release_namespace: cattle-system
+    create_namespace: false
+    wait: true
+    values_files:
+      - /tmp/rancher-values.yaml

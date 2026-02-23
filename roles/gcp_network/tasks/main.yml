@@ -1,0 +1,66 @@
+---
+- name: Ensure VPC exists
+  google.cloud.gcp_compute_network:
+    name: "{{ gcp_network_name }}"
+    auto_create_subnetworks: false
+    routing_config:
+      routing_mode: "{{ gcp_network_routing_mode }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+
+- name: Ensure subnet exists
+  google.cloud.gcp_compute_subnetwork:
+    name: "{{ gcp_subnet_name }}"
+    ip_cidr_range: "{{ gcp_subnet_cidr }}"
+    region: "{{ gcp_region }}"
+    network:
+      selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project_id }}/global/networks/{{ gcp_network_name }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+
+- name: Create restricted admin ingress firewall
+  google.cloud.gcp_compute_firewall:
+    name: rancher-admin-ingress
+    network:
+      selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project_id }}/global/networks/{{ gcp_network_name }}"
+    allowed:
+      - ip_protocol: tcp
+        ports: ["22", "6443", "9345"]
+    source_ranges: "{{ admin_cidrs }}"
+    target_tags: "{{ gcp_cluster_tags }}"
+    direction: INGRESS
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+
+- name: Create public web ingress firewall for Rancher
+  google.cloud.gcp_compute_firewall:
+    name: rancher-public-web
+    network:
+      selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project_id }}/global/networks/{{ gcp_network_name }}"
+    allowed:
+      - ip_protocol: tcp
+        ports: ["80", "443"]
+    source_ranges: ["0.0.0.0/0"]
+    target_tags: "{{ gcp_cluster_tags }}"
+    direction: INGRESS
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+
+- name: Reserve static public IP for Rancher ingress
+  google.cloud.gcp_compute_address:
+    name: "{{ gcp_rancher_address_name }}"
+    region: "{{ gcp_region }}"
+    address_type: EXTERNAL
+    network_tier: "{{ gcp_rancher_static_ip_tier }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present

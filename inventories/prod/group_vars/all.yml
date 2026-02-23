@@ -1,0 +1,44 @@
+---
+# GCP basics
+gcp_project_id: "my-gcp-project"
+gcp_region: "us-central1"
+gcp_zone: "us-central1-a"
+gcp_credentials_file: "~/.config/gcloud/ansible-sa.json"
+
+# Networking
+gcp_network_name: "rancher-vpc"
+gcp_subnet_name: "rancher-subnet"
+gcp_subnet_cidr: "10.42.0.0/24"
+gcp_cluster_tags:
+  - rancher-k8s
+
+# Compute
+gcp_machine_type: "e2-standard-4"
+gcp_disk_size_gb: 80
+gcp_image_family: "ubuntu-2204-lts"
+gcp_image_project: "ubuntu-os-cloud"
+gcp_ssh_user: "ansible"
+gcp_ssh_public_key_file: "~/.ssh/id_rsa.pub"
+gcp_instance_sa_name: "rancher-node-sa"
+
+# Static IP / DNS
+gcp_rancher_address_name: "rancher-public-ip"
+rancher_fqdn: "rancher.example.com"
+
+# Kubernetes / Rancher
+kubeconfig_path: "/etc/rancher/rke2/rke2.yaml"
+rke2_version: "v1.29.8+rke2r1"
+rke2_token: "{{ vault_rke2_token }}"
+
+# Helm chart versions
+ingress_nginx_chart_version: "4.11.2"
+cert_manager_chart_version: "v1.15.3"
+rancher_chart_version: "2.9.1"
+
+# ACME
+letsencrypt_server: "https://acme-v02.api.letsencrypt.org/directory"
+letsencrypt_email: "platform@example.com"
+
+# Firewall source ranges (restrict to corp/public bastion ranges)
+admin_cidrs:
+  - "203.0.113.10/32"

@@ -1,0 +1,98 @@
+---
+- name: Build control-plane instance list
+  ansible.builtin.set_fact:
+    control_plane_instances: "{{ range(1, control_plane_count + 1) | map('regex_replace', '^(.*)$', control_plane_prefix ~ '\\1') | list }}"
+
+- name: Build worker instance list
+  ansible.builtin.set_fact:
+    worker_instances: "{{ range(1, worker_count + 1) | map('regex_replace', '^(.*)$', worker_prefix ~ '\\1') | list }}"
+
+- name: Ensure control-plane instances exist
+  google.cloud.gcp_compute_instance:
+    name: "{{ item }}"
+    machine_type: "zones/{{ gcp_zone }}/machineTypes/{{ gcp_machine_type }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        initialize_params:
+          disk_size_gb: "{{ gcp_disk_size_gb }}"
+          source_image: "projects/{{ gcp_image_project }}/global/images/family/{{ gcp_image_family }}"
+    network_interfaces:
+      - subnetwork:
+          selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project_id }}/regions/{{ gcp_region }}/subnetworks/{{ gcp_subnet_name }}"
+        access_configs:
+          - name: External NAT
+            type: ONE_TO_ONE_NAT
+    tags:
+      items: "{{ gcp_cluster_tags }}"
+    metadata:
+      ssh-keys: "{{ gcp_ssh_user }}:{{ lookup('file', gcp_ssh_public_key_file) }}"
+    service_accounts:
+      - email: "{{ gcp_instance_sa_name }}@{{ gcp_project_id }}.iam.gserviceaccount.com"
+        scopes:
+          - https://www.googleapis.com/auth/cloud-platform
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+  loop: "{{ control_plane_instances }}"
+
+- name: Ensure worker instances exist
+  google.cloud.gcp_compute_instance:
+    name: "{{ item }}"
+    machine_type: "zones/{{ gcp_zone }}/machineTypes/{{ gcp_machine_type }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        initialize_params:
+          disk_size_gb: "{{ gcp_disk_size_gb }}"
+          source_image: "projects/{{ gcp_image_project }}/global/images/family/{{ gcp_image_family }}"
+    network_interfaces:
+      - subnetwork:
+          selfLink: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project_id }}/regions/{{ gcp_region }}/subnetworks/{{ gcp_subnet_name }}"
+        access_configs:
+          - name: External NAT
+            type: ONE_TO_ONE_NAT
+    tags:
+      items: "{{ gcp_cluster_tags }}"
+    metadata:
+      ssh-keys: "{{ gcp_ssh_user }}:{{ lookup('file', gcp_ssh_public_key_file) }}"
+    service_accounts:
+      - email: "{{ gcp_instance_sa_name }}@{{ gcp_project_id }}.iam.gserviceaccount.com"
+        scopes:
+          - https://www.googleapis.com/auth/cloud-platform
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+    state: present
+  loop: "{{ worker_instances }}"
+
+- name: Gather control-plane instance info
+  google.cloud.gcp_compute_instance_info:
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    filters:
+      - "name = {{ item }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+  loop: "{{ control_plane_instances }}"
+  register: cp_info
+
+- name: Gather worker instance info
+  google.cloud.gcp_compute_instance_info:
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    filters:
+      - "name = {{ item }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_credentials_file }}"
+  loop: "{{ worker_instances }}"
+  register: worker_info
+
+- name: Render dynamic inventory file with public/private IPs
+  ansible.builtin.template:
+    src: hosts.generated.yml.j2
+    dest: "{{ playbook_dir }}/../inventories/prod/hosts.generated.yml"
+    mode: "0640"
